@@ -542,7 +542,7 @@ class CellTestPlanGenerator:
                 print("----------",ii[1],'-------------')
             if "end" in ii[1].lower():
                 print("----------",ii[1],'-------------')
-                l_step.append([str("Charge at 1 C until 2.8 V"),str(25)+'oC'])
+                # l_step.append([str("Charge at 1 C until 2.8 V"),str(25)+'oC'])
             if st:
                if "hold" in str(st[0]).lower():
                    continue
@@ -554,9 +554,9 @@ class CellTestPlanGenerator:
             # else:
             #     print(ii,"............>>>>>>>>>>>>>>>>>>>")
 
-        model = pybamm.lithium_ion.DFN()
+        model = pybamm.lithium_ion.SPM({"thermal": "lumped"})
 
-        param = pybamm.ParameterValues("Mohtat2020")
+        param = pybamm.ParameterValues("Chen2020")
 
         print("------------------------------------------------>>>>",self.cellcapacity)
 
@@ -571,15 +571,15 @@ class CellTestPlanGenerator:
         # param.process_model(model)
         # geometry = model.default_geometry
         # param.process_geometry(geometry)
-        # #
+        # # #
         # mesh = pybamm.Mesh(geometry, model.default_submesh_types, model.default_var_pts,)
 
-        # # # # Step 6: Apply spatial methods
+        # # # # # Step 6: Apply spatial methods
         # disc = pybamm.Discretisation(mesh, model.default_spatial_methods)
         # disc.process_model(model,inplace=False)  # ✅ Now spatial variables arefv ready
         # model.check_well_determined(disc)
 
-        solver = pybamm.CasadiSolver( dt_max=50,atol=1e-6, rtol=1e-6)  #return_solution_if_failed_early=True
+        solver = pybamm.CasadiSolver(dt_max=10)  #return_solution_if_failed_early=True
 
         # pybamm.step.string("Rest for 5 seconds", temperature="25oC"),
         #     pybamm.step.string("Rest for 30 minutes"),
