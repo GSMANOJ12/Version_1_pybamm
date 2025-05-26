@@ -8,6 +8,8 @@ Created on Thu Jun 20 09:26:22 2024
 import pandas as pd
 import numpy as np
 import re
+import pybamm
+import numpy as np
 
 #import Cell_Test_Plan_Flowchart
 
@@ -213,9 +215,6 @@ class CellTestPlanGenerator:
                 self.set_calculation_parameters() 
         
                 self.process_main_table_expanded()
-
-                for ii in self.main_table_expanded: 
-                   print(ii)
         
                 self.set_end()
 
@@ -233,9 +232,6 @@ class CellTestPlanGenerator:
         
             #Fill the unknown values
             self.populate_unkown_values(r'NA', r'NA')
-
-            for ii in self.main_table_expanded: 
-                   print(ii)
 
             #Integrating operating window
             if (self.integrate_operating_window_flag==1):
@@ -257,401 +253,6 @@ class CellTestPlanGenerator:
         
         #Marking the flag for completion of the test plan generation
         ProcessBlockForGUI.test_plan_status_flag = 1
-
-    def procees_inputs_for_pybamm(self,test_spec_input_from_gui,test_procedure_input_from_gui,operating_window_input_from_gui,initialization_parameters_file_input_from_gui,cell_type):
-        self.test_spec_file_path = str(test_spec_input_from_gui)
-        self.test_procedure_input = str(test_procedure_input_from_gui)
-        self.operating_window_file_path = str(operating_window_input_from_gui)    
-        self.initialization_parameters_file_path = str(initialization_parameters_file_input_from_gui)
-        self.cell_type_input = str(cell_type)
-        # self.termination_input = 1
-        # self.test_plan_config_input = 1
-        # self.registration_parameters_input = ["Aux1"]
-
-    def simulation_function(path,ind,type,ow,initt,cell_type):
-        import pybamm
-
-        self.declare_variables()
-
-        self.sim_type=type.lower()
-        # print(path,table_index)
-        self.load_configuration_file()
-
-        self.procees_inputs_for_pybamm(path,ind,ow,initt,cell_type)
-
-        self.get_parameter_limit_from_opw()
-
-        self.read_tables_from_word(self.test_spec_file_path)
-
-        self.source_table_index = self.get_source_table_index()
-
-        self.main_table = self.tables_list_with_names[self.source_table_index][1]
-
-        self.get_reference_table()
-        
-        #Remove all the white spaces in the tables (except comment section) - Pre-processing
-        self.main_table = self.pre_process_document(self.tables_list_with_names[self.source_table_index][1])
-
-        #Find the column parameter positions
-        self.get_column_iterators_positions(len(self.main_table[1]))
-
-        #Configure the test plan
-        #Find the temperature values
-        if (self.sim_type == "pybamm"):
-            #Find the temperature values
-            #Expand the steps in the main table (expanding the loops)
-            self.main_table_expanded = self.expand_the_table_steps(self.main_table, r'NA')
-
-            #Fill the unknown values
-            self.populate_unkown_values( r'NA', r'NA')
-
-            table1=self.main_table_expanded[:]
-
-            #Integrating operating window
-            if (self.integrate_operating_window_flag==1):
-                self.apply_operating_window_limits(self.main_table_expanded)
-
-        prev_temp=0
-
-        def func_to_val(expr):
-            d={"irpt":self.cellcapacity,"inom":self.cellcapacity,"vdyn,max":self.upper_voltage_limit_value,"vdyn,min":self.lower_voltage_limit_value,"tpulse":10,"ipulse":30,"imax,cont":20,}
-            dk=list(d.keys())
-            exp1=re.findall(r'(\d*\.?\d*)\s*([*/⋅⋅.])\s*([a-zA-Z_][a-zA-Z0-9_]*)|([a-zA-Z_][a-zA-Z0-9_]*)\s*([*/⋅⋅.])\s*(\d*\.?\d*)',expr.replace(" ",""))      #k[0] is unit 
-            div,mul=0,0
-            flag1=0
-            if exp1:
-                for k1 in exp1:
-                    for k1l in k1:
-                        if '/' == k1l:
-                            # print("div")
-                            div=1
-                        elif ('⋅' in k1l or '*' in k1l):
-                            # print("mul")
-                            mul=1
-                        elif k1l.lower() in dk:
-                            val1=d[k1l.lower()]
-                            # print(val1,k1l.lower(),"ddddddddddddddddddddddd")
-                        else:
-                            val2r = re.search(r'(\d*\.?\d*)', k1l)
-                            val2=val2r.group(0)
-                            # print(val2,k1l,")
-            else:
-                if expr.lower() in dk:
-                    val1=d[expr.lower()]
-                else:
-                    val1 = re.search(r'(\d*\.?\d*)\s*([*/⋅⋅.])\s*([a-zA-Z_][a-zA-Z0-9_]*)|([a-zA-Z_][a-zA-Z0-9_]*)\s*([*/⋅⋅.])\s*(\d*\.?\d*)|',expr.lower())
-                    print(val1,"here")
-                    val1=val1[0]
-
-            if div and val1:
-                fin = (float(val1) / float(val2))
-                fin1=fin
-                # print(fin1)
-            elif mul and val1:
-                fin = (float(val1) * float(val2))
-                fin1=fin 
-                # print(fin1)                           
-            else:
-                fin1=val1
-            # print(fin1,"--------------------------------->")
-            return fin1
-
-        def convert_table_to_pybamm(step):
-            global prev_temp
-            l=list()
-            if "command" in step[1].lower():  
-                return None
-            
-            for ik in range(0,len(step)):
-                step[ik]=step[ik].replace(" ","")
-            # return step
-
-            if step[1].lower()=="settemperature":
-                temp = re.findall(r"(-?\d+\.?\d*?)\s*?([A-Za-z°]+)", step[2])                       # st=f"Rest for 5 seconds, temperature={i[2]}"
-                temp=temp[0]
-                if "C" in temp[1]:
-                    temp=temp[0]
-                elif "K" in temp[1]:
-                    tmp = int(temp[0]) - 273.15
-                    temp=tmp
-                st="Rest for 20 seconds"
-                prev_temp=temp
-                return st,temp
-                    
-            if step[1].lower()=="rest":
-                timee=re.findall(r"(\d+\.?\d*?)\s*?([a-zA-Z ]+)",step[3], re.IGNORECASE)                                   #n="".join(n)
-                timee=timee[0]
-                if "m" in timee[1]:
-                    form="minutes"
-                elif "h" in timee[1]:
-                    form="hours"
-                else:
-                    form="seconds"
-                # else:
-                #     print("time format has not valid")
-                time=timee[0]+" "+form
-                st=f"Rest for {time}"
-                return st,prev_temp
-            
-            rate=""
-            # d={"irpt":self.cellcapacity,"inom":self.cellcapacity,"vdyn,max":self.upper_voltage_limit_value,"Vdyn,min":self.lower_voltage_limit_value}
-            
-            if step[1].lower()=="charge":
-                pattern_par = re.finditer(r'(I|V)[<>=]((?:.(?!\bI=|\bV=))+)', step[2])
-                results_par = [(m.group(1), m.group(2).strip(',')) for m in pattern_par]
-                ct1=0
-                if "SOC" in step[2]:
-                    d={100: 3.496826, 95: 3.336521, 90: 3.335038, 85: 3.344210, 80: 3.334213, 75: 3.334198, 70: 3.331086, 65: 3.333976, 60: 3.314450, 55: 3.300315, 50: 3.298641, 45: 3.296620, 40: 3.294483, 35: 3.288390, 30: 3.277930, 25: 3.262439, 20: 3.244488, 15: 3.228439, 10: 3.210465, 0: 2.593900}
-                    pattern_par = re.findall(r'(soc)[<>=](\d+(\.\d+)?)', step[2].lower())
-                    # print(pattern_par)
-                var,expr=results_par[0]               #################################################### took only for one experssion because of SOC
-                if var.lower()=="i":
-                    rate="Charge at "
-                    if "C" in expr:
-                        rate+=f"{expr}"
-                    else:
-                        v=func_to_val(expr)
-                        rate+=f"{v} A"
-                if var.lower()=="v":
-                    v=func_to_val(expr)
-                    rate="Hold at "
-                    rate+=f"{v} V"
-                pattern_time=re.findall(r'(t)[<>=](\d+(\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)', step[3].lower())
-                pattern_ex = re.finditer(r'(I|V)[<>=]((?:.(?!\bI=|\bV=))+)', step[3])
-                results_ex = [(m.group(1), m.group(2).strip(',')) for m in pattern_ex]
-                if "SOC" in step[3]:
-                    d1={100: 3.496826, 95: 3.336521, 90: 3.335038, 85: 3.344210, 80: 3.334213, 75: 3.334198, 70: 3.331086, 65: 3.333976, 60: 3.314450, 55: 3.300315, 50: 3.298641, 45: 3.296620, 40: 3.294483, 35: 3.288390, 30: 3.277930, 25: 3.262439, 20: 3.244488, 15: 3.228439, 10: 3.210465, 0: 2.593900}
-                    pattern_par1 = re.findall(r'(soc)[<>=](\d+(\.\d+)?)', step[3].lower())
-                    val=d1[int(pattern_par1[0][1])]
-                    rate+= f" until {val} V"
-                    # print()
-                if results_ex:
-                    var,expr=results_ex[0]               #################################################### took only for one experssion because of SOC
-                    # print(var,expr) 
-                    if var.lower()=="i":
-                        rate+=" until"
-                        if "c" in expr.lower():
-                            rate+=f"{expr}"
-                        else:
-                            v=func_to_val(expr)
-                            rate+=f" {v} A"
-                    if var.lower()=="v":
-                        rate+=" until"
-                        v=func_to_val(expr)
-                        rate+=f" {v} V" 
-
-                if pattern_time: 
-                  var=pattern_time[0][0]
-                  expr=pattern_time[0][1]
-                  if var.lower()=="t":
-                    rate+=" for"
-                    v=func_to_val(expr)
-                    rate+=f" {v} seconds"          
-                return rate,prev_temp
-
-
-            if step[1].lower()=="discharge":
-                pattern_par = re.finditer(r'(I|V)[<>=]((?:.(?!\bI=|\bV=))+)', step[2])
-                results_par = [(m.group(1), m.group(2).strip(',')) for m in pattern_par]
-                if "SOC" in step[2]:
-                    d={100: 3.496826, 95: 3.336521, 90: 3.335038, 85: 3.344210, 80: 3.334213, 75: 3.334198, 70: 3.331086, 65: 3.333976, 60: 3.314450, 55: 3.300315, 50: 3.298641, 45: 3.296620, 40: 3.294483, 35: 3.288390, 30: 3.277930, 25: 3.262439, 20: 3.244488, 15: 3.228439, 10: 3.210465, 0: 2.593900}
-                    pattern_par = re.findall(r'(soc)[<>=](\d+(\.\d+)?)', step[2].lower())
-                    # print(pattern_par,"lklkmlmlmlmkmkmlkmlkmlm")
-                var,expr=results_par[0]               #################################################### took only for one experssion because of SOC
-                # print(var,expr)
-                
-                if var.lower()=="i":
-                    rate="Discharge at "
-                    if "C" in expr:
-                        rate+=f"{expr}"
-                    else:
-                        v=func_to_val(expr)
-                        rate+=f"{v} A"
-                        # print("----------------",rate)
-                if var.lower()=="v":
-                    v=func_to_val(expr)
-                    rate="Hold at "
-                    rate+=f"{v} V"
-                
-                pattern_ex = re.finditer(r'(I|V)[<>=]((?:.(?!\bI=|\bV=))+)', step[3])
-                results_ex = [(m.group(1), m.group(2).strip(',')) for m in pattern_ex]
-                if "SOC" in step[3]:
-                    d1={100: 3.496826, 95: 3.336521, 90: 3.335038, 85: 3.344210, 80: 3.334213, 75: 3.334198, 70: 3.331086, 65: 3.333976, 60: 3.314450, 55: 3.300315, 50: 3.298641, 45: 3.296620, 40: 3.294483, 35: 3.288390, 30: 3.277930, 25: 3.262439, 20: 3.244488, 15: 3.228439, 10: 3.210465, 0: 2.593900}
-                    pattern_par1 = re.findall(r'(soc)[<>=](\d+(\.\d+)?)', step[3].lower())
-                    val=d1[int(pattern_par1[0][1])]
-                    rate+= f" until {val} V"
-                pattern_time=re.findall(r'(t)[<>=](\d+(\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)', step[3].lower())
-                              #################################################### took only for one experssion because of SOC
-                if results_ex:
-                    var,expr=results_ex[0] 
-                    if var.lower()=="i":
-                        rate+=" until" 
-                        if "c" in expr.lower():
-                            rate+=f"{expr}"
-                        else:
-                            v=func_to_val(expr)
-                            rate+=f" {v} A"
-                    if var.lower()=="v":
-                        rate+=" until" 
-                        v=func_to_val(expr)
-                        rate+=f" {v} V"    
-                if pattern_time: 
-                  var=pattern_time[0][0]
-                  expr=pattern_time[0][1]
-                  if var.lower()=="t":
-                    rate+=" for"
-                    v=func_to_val(expr)
-                    rate+=f" {v} seconds"  
-      
-                return rate,prev_temp
-                # for var, expr in results:
-                #     if ct1>=1:
-                #         rate+=" or "
-                #     print(f"{var} = {expr}")
-                #     if var.lower()=="i":
-                #         if expr.lower() in d:
-                #             rate+=d[expr.lower()]+"A"
-                #         else:
-                #             rate+=expr
-                #     if var.lower()=="v":
-                #         if expr.lower() in d:
-                #             rate+=str(d[expr.lower()])+"V"
-                #         else:
-                #             rate+=expr
-                #     ct1+=1
-                # print(rate,"okokkokok")
-                # exit_cond=step[4].split("=")
-                # print(exit_cond,"llllllllllllll")
-                # final=step[1]+" "+rate+" "+exit_cond
-            # print(step[1],".........")
-                # else:
-                #     rate=step[2].split("=")
-                #     print(rate)
-                # exit_cond=step[3].split("=")
-                # print(exit_cond)
-
-        # print("ooooooooooooooo")
-        l_step=[]
-        # table1.append(['', 'Charge', 'I=Ipulse', 't>tpulse', 'Adjust the SOC to SoCRPT, Set'])
-        # table1.append(['', 'Discharge', 'I=Ipulse', 't>tpulse', 'Adjust the SOC to SoCRPT, Set'])
-        for ii in table1:
-            # print(ii,"------------------------------------------------->")
-            st=convert_table_to_pybamm(ii)
-            # print(st,ii)
-            if "start" in ii[1].lower():
-                print("----------",ii[1],'-------------')
-            if "end" in ii[1].lower():
-                print("----------",ii[1],'-------------')
-                l_step.append([str("Charge at 1 C until 2.8 V"),str(25)+'oC'])
-            if st:
-               if "hold" in str(st[0]).lower():
-                   continue
-               print(f'pybamm.step.string("{st[0]}"),',ii)
-               l_step.append([str(st[0]),str(st[1])+'oC'])
-            # # if st:
-            #     print(st[0],st[1])
-            #     l_step.append([st[0],st[1]])
-            # else:
-            #     print(ii,"............>>>>>>>>>>>>>>>>>>>")
-
-        model = pybamm.lithium_ion.DFN()
-
-        param = pybamm.ParameterValues("Mohtat2020")
-
-        print("------------------------------------------------>>>>",self.cellcapacity)
-
-        param.update({
-            'Nominal cell capacity [A.h]': self.cellcapacity,
-            'Open-circuit voltage at 0% SOC [V]': 2.394,
-            'Open-circuit voltage at 100% SOC [V]': 3.428,
-            'Lower voltage cut-off [V]': 1.8,
-            'Upper voltage cut-off [V]': 3.8,
-        })
-
-        # param.process_model(model)
-        # geometry = model.default_geometry
-        # param.process_geometry(geometry)
-        # #
-        # mesh = pybamm.Mesh(geometry, model.default_submesh_types, model.default_var_pts,)
-
-        # # # # Step 6: Apply spatial methods
-        # disc = pybamm.Discretisation(mesh, model.default_spatial_methods)
-        # disc.process_model(model,inplace=False)  # ✅ Now spatial variables arefv ready
-        # model.check_well_determined(disc)
-
-        solver = pybamm.CasadiSolver( dt_max=50,atol=1e-6, rtol=1e-6)  #return_solution_if_failed_early=True
-
-        # pybamm.step.string("Rest for 5 seconds", temperature="25oC"),
-        #     pybamm.step.string("Rest for 30 minutes"),
-        #     pybamm.step.string("Discharge at 1.0 A until 2.0 V"),
-        #     pybamm.step.string("Discharge at 2.0 V until 1.2 A"),
-        #     pybamm.step.string("Rest for 30 minutes"),
-        #     pybamm.step.string("Charge at 1.0 A until 3.8 V")
-        experiment1 = pybamm.Experiment([
-            pybamm.step.string(i[0],temperature=i[1]) for i in l_step
-            ])
-
-        sim1 = pybamm.Simulation(model, parameter_values=param,experiment=experiment1,solver=solver)
-        solution = sim1.solve([0,80000])
-        sim1.plot(["Terminal voltage [V]","Current [A]"])
-        # # solution = sim.solve([0, 3600])
-        # plot = pybamm.QuickPlot(sim1, figsize=(14, 7))
-        # plot.plot(0.5)
-        # import matplotlib.pyplot as plt
-        
-        # # # Extract variables from solution
-        # t = solution["Time [s]"].entries
-        # voltage = solution["Terminal voltage [V]"].entries
-        # current = solution["Current [A]"].entries
-        
-        # # # Plot manually
-        # plt.figure()
-        # plt.plot(t, voltage, label="Voltage (V)")
-        # plt.plot(t, current, label="Current (A)")
-        # plt.xlabel("Time (s)")
-        # plt.ylabel("Value")
-        # plt.legend()
-        # plt.show()
-        # def get_specific_capacity_positive(solution):
-            # current = solution["Current [A]"].entries
-            # time = solution["Time [s]"].entries
-            # dt = np.diff(time)
-            # current_avg = 0.5 * (current[:-1] + current[1:])
-            # capacity = np.abs(np.sum(current_avg * dt)) / 3600  # Convert to Ah
-            # return capacity
-        # def run_cycle_simulation(model, parameter_values, num_cycles):
-                # capacities = []
-                # # Define one charge + discharge cycle
-                # cycle = [
-                #     "Discharge at 1C until 2.5V",
-                #     "Charge at 1C until 4.2V"
-                # ]
-                # experiment_steps = cycle * num_cycles
-                # experiment = pybamm.Experiment(experiment_steps)
-                # sim = pybamm.Simulation(model, parameter_values=parameter_values, experiment=experiment)
-                # solution = sim.solve()
-                # # Get step-wise solutions directly
-                # split_solutions = solution.cycles
-                # for i in range(0, len(split_solutions), 2):  # Only Discharge steps
-                #     discharge_solution = split_solutions[i]
-                #     capacity = get_specific_capacity_positive(discharge_solution)
-                #     capacities.append(capacity)
-                # return capacities
-        # model = pybamm.lithium_ion.DFN()  # You can also use pybamm.lithium_ion.Chen2020()
-        # param = model.default_parameter_values
-        # num_cycles = 5
-
-        # capacities = run_cycle_simulation(model, param, num_cycles)
-
-        # # Plotting
-        # plt.figure(figsize=(8, 5))
-        # plt.plot(range(1, num_cycles + 1), capacities, marker='o')
-        # plt.xlabel("Cycle Number")
-        # plt.ylabel("Specific Capacity (Positive) [Ah]")
-        # plt.title("Specific Capacity (Positive) vs Number of Cycles")
-        # plt.grid(True)
-        # plt.tight_layout()
-        # plt.show()
 
     def process_inputs_from_gui(self, test_spec_input_from_gui, operating_window_input_from_gui, initialization_parameters_file_input_from_gui, test_procedure_input_from_gui, cell_type_input_from_gui, cycler_input_from_gui, termination_input_from_gui, test_plan_config_input_from_gui, registration_input_from_gui):
         self.test_spec_file_path = str(test_spec_input_from_gui)
@@ -787,13 +388,10 @@ class CellTestPlanGenerator:
         temperature_string = 'Temperature[°C]'.lower()    
         upper_voltage_string = 'Vdyn,max[V]'.lower()
         lower_voltage_string = 'Vdyn,min[V]'.lower()
-        capac="Cellcapacity[Ah]:".lower()
 
         all_temperature_values = []
         all_upper_voltage_limit_values = []
         all_lower_voltage_limit_values = []
-        capacity_value=0
-        flag_cap=0
 
         #Load the excel file
         sheet_data = pd.read_excel(self.operating_window_file_path, sheet_name=self.cell_type_input)
@@ -802,12 +400,6 @@ class CellTestPlanGenerator:
         for row_index, row in sheet_data.iterrows():
             for col_index, value in enumerate(row):
                 #Check for 'Temperature[°C]' string in the excel
-                if flag_cap==1 and str(value) != "nan":
-                    # print(value)
-                    if value:
-                        capacity_value=value
-                        flag_cap=0
-
                 if (pd.notna(value) and temperature_string in str(value).lower().replace(" ","")):
                     #Store all the numerical values from the particular row and removes NaN
                     all_temperature_values = [value for value in row if isinstance(value, (int, float)) and not math.isnan(value)]
@@ -823,12 +415,6 @@ class CellTestPlanGenerator:
                 elif (pd.notna(value) and lower_voltage_string in str(value).lower().replace(" ","")):
                     #Store all the numerical values from the particular row and removes NaN
                     all_lower_voltage_limit_values = [value for value in row if isinstance(value, (int, float)) and not math.isnan(value)]
-
-                elif (pd.notna(value) and capac in str(value).lower().replace(" ","")):
-                    #Store all the numerical values from the particular row and removes NaN
-                    flag_cap = 1
-                
-        self.cellcapacity=capacity_value
 
         for i in range(0, len(all_upper_voltage_limit_values)):
             #Appending the upper voltage limit with respective to the temperature
@@ -915,8 +501,8 @@ class CellTestPlanGenerator:
         
         #Fetch the parameters for the global safety limits
         #Upper and lower voltage limits (first value) - need to change for dynamic temperature ranges
-        self.upper_voltage_limit_value = self.all_upper_voltage_limit_values_with_temp[0][1]  #vmax
-        self.lower_voltage_limit_value = self.all_lower_voltage_limit_values_with_temp[0][1]  #vmin
+        self.upper_voltage_limit_value = self.all_upper_voltage_limit_values_with_temp[0][1]
+        self.lower_voltage_limit_value = self.all_lower_voltage_limit_values_with_temp[0][1]
 
         #Upper temperature limit
         self.upper_temperature_limit_value = self.all_temperature_values_with_col[-1][0]
@@ -1004,11 +590,7 @@ class CellTestPlanGenerator:
                 loop_position_bit += 1
             
             #Configuring the keywords for searching in the loop
-            parameter_check_list_keywords = ["I=xx"] if self.test_plan_config_input == 1 else ["I=xx", "T=TSet", "T=xx"] 
-
-            #Iniyan
-
-
+            parameter_check_list_keywords = ["I=xx"] if self.test_plan_config_input == 1 else ["I=xx", "T=TSet", "T=xx"]             
 
             if (self.main_table[i][self.parameter_iterator] in parameter_check_list_keywords):
                 #Initializing the duplicate flag
@@ -2103,6 +1685,39 @@ class CellTestPlanGenerator:
         print('\nTest plan generated')
         
         print(f'\nCheck the file - {output_file_name} in {self.output_folder} folder')
+  
+    def simulation_function(data):
+
+        model = pybamm.lithium_ion.DFN()
+        param = pybamm.ParameterValues("Chen2020")
+        experiment1 = pybamm.Experiment([
+            pybamm.step.string("Rest for 2 minutes", temperature="25oC"),
+            pybamm.step.string("Charge at 1C until 4.2V",temperature="298K"),
+            pybamm.step.string("Rest for 30 minutes", temperature= "25oC"),
+            pybamm.step.string("Charge at 2 C for 1 minutes", period="3 minutes",temperature= "25oC"),
+            pybamm.step.string("Discharge at 1C until 2.5V",temperature= "25oC"),
+            ]*5)
+        sim1 = pybamm.Simulation(model, parameter_values=param,experiment=experiment1)
+        solution1 = sim1.solve([0,650000])
+        
+        split_solutions = solution1.cycles
+        capacities=[]
+
+        def get_specific_capacity_positive(solution):
+        # This function calculates specific capacity during discharge
+            I = solution["Current [A]"].entries
+            t = solution["Time [s]"].entries
+            Q = abs((I * np.diff(t, prepend=0)).sum()) / 3600  # Convert As to Ah
+            return Q
+        
+        for i in range(0, len(split_solutions), 2):  # Only Discharge steps
+                discharge_solution = split_solutions[i]
+                capacity = get_specific_capacity_positive(discharge_solution)
+                capacities.append(capacity)
+
+        # time_values = solution1["Time [s]"].entries
+        # param.update({"time_val":capacities})
+        sim1.plot(["Terminal voltage [V]", "Current variable [A]"])
 
 class ProcessBlockForGUI:
     test_plan_status_flag = 0 #Flag for tracking the test plan generation status
@@ -2166,29 +1781,22 @@ if __name__ == '__main__':
     main()
 
 
-# #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-10-1_Validation_tests_V1.1_changed.docx"
-# #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-1_Internal Resistance_V1.1_changed.docx"
-# #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-2_Internal Resistances BCC_V1.1_draft.docx"
-# a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx"
-# "C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator 3\Cell Test Plan Generator\Test Specifications\DTC-P-10-1_Validation_tests_V1.1_changed.docx"
-# C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx
-# C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx
-# C:\Users\GSMANOJ\Downloads\new\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-1_Capacity_Energy_Efficiency_Crates_V1.0.docx
-a = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator 3\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx"
+#a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-10-1_Validation_tests_V1.1_changed.docx"
+#a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-1_Internal Resistance_V1.1_changed.docx"
+#a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-2_Internal Resistances BCC_V1.1_draft.docx"
+a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx"
 
-b = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx"
+b = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx"
 
-c = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Initialization_Parameters_Document.xlsx"
+c = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Supporting Documents\Initialization_Parameters_Document.xlsx"
 
 #d = 'Table 3 : Test procedure for thermal relaxation'
 #d = 'Table 2: : Test procedure for determination of internal resistance'
-# d = 'Table 5: Test procedure for Full DoD continuous current experiment'
-# d = 'Table 9: Test procedure for Charge neutral pulse experiment'
+d = 'Table 4: Test procedure for the determination of internal resistances'
+#d = 'Table 7: Test procedure for Partial DoD continuous current experiment'
 d = 'Table 2: Test procedure for determination of CC/3,y, EC/3,y at different temperatures'
-# d="Table 7: Test procedure for Partial DoD continuous current experiment"
-# d="Table 2: Test procedure for determination of capacity CRPT, CC/x,25°C, EC/x 25°C and ηC/x,25°C at different discharging C-rates."
 
-e = 'Cell Alpha - Op-Window'
+e = 'Cell Bravo - Op-Window'
 
 f = 'BaSyTec'
 
@@ -2199,6 +1807,4 @@ h = 0
 i = ['Ah-Set', 'Ah-Charge', 'Ah-Discharge']
 
 
-# CellTestPlanGenerator.execute_main_generate_function(a, b, c, d, e, f, g, h, i)
-
-CellTestPlanGenerator.simulation_function(a,d,"pybamm",b,c,e)
+#CellTestPlanGenerator.execute_main_generate_function(a, b, c, d, e, f, g, h, i)

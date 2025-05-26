@@ -1,0 +1,86 @@
+{
+    "folder_structure": {
+         "_comment1": "Directory for Icons used in the GUI",
+        "icons_folder": "Icons",
+
+        "_comment2": "Directory for the Test plan (.pln) to get stored",
+        "output_folder": "Output"
+    },
+
+    "gui_configuration": {
+        "_comment1": "Title for the GUI",
+        "gui_title": "Cell Test Plan Generator GUI",
+
+        "_comment2": "Side-frame title for the GUI",
+        "gui_sideframe_title": "Cell Test Plan Generator",
+
+        "_comment3": "Geometry for the GUI - Minimun: 780x540",
+        "gui_geometry": [780, 540],
+
+        "_comment4": "Default theme for the GUI",
+        "gui_default_mode": "Light",
+
+        "_comment5": "Color for the GUI",
+        "gui_color": "blue"
+    },
+
+    "database": {
+        "_comment1": "List of the parameters used in the test specification",
+        "doc_command_list": ["CYCLE-START-N", "CYCLE-END-N", "Charge", "Discharge", "Rest", "Set", "SetTemperature"],
+    
+        "_comment2": "List of cyclers",
+        "cell_cycler_list": ["BaSyTec"]
+    },
+
+    "doc_matching_string": {
+        "_comment1": "Matching string for operating window document",
+        "opw_document_matching_string": "operating",
+
+        "_comment2": "Matching string for initialization parameters document",
+        "ini_doc_matching_string": "initialization",
+
+        "_comment3": "String for the test procedure tables",
+        "string_for_test_procedure_tables": "test procedure"
+    },
+
+    "main_table_keywords":{
+        "_comment1": "Matching string for command column",
+        "command_column_string": "command",
+
+        "_comment2": "Matching string for paramater column",
+        "parameter_column_string": "parameter",
+
+        "_comment3": "Matching string for exit condition column",
+        "exit_condition_column_string": "exitcondition",
+
+        "_comment4": "Matching string for comment column",
+        "comment_column_string": "comment"
+    },
+
+    "supporting_table_keywords":{
+        "_comment1": "Matching string for temperature column",
+        "_note_1": "Note: Unicode for ° -> \u00B0 (° symbol cannot be encoded directly)",
+        "temperature_column_string": "tset/\u00B0c",
+
+        "_comment2": "Matching string for current column",
+        "current_column_string": "i/a",
+
+        "_comment3": "Matching string for cycle count column",
+        "cycle_count_column_string": "no.ofcycles",
+
+        "_comment4": "Matching string for soc column",
+        "soc_column_string": "socrpt,set/%",
+
+        "_comment5": "Matching string for start soc column",
+        "start_soc_column_string": "startsoc",
+        
+        "_comment6": "Matching string for start end column",
+        "end_soc_column_string": "endsoc",
+        
+        "_comment7": "Matching string for pulse time column",
+        "pulse_time_column_string": "tpulse/s",
+
+        "_comment8": "Matching string for CH/DCH column",
+        "ch_dch_column_string": "ch/dch"
+    }
+}

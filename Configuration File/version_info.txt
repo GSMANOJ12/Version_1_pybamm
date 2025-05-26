@@ -1,0 +1,11 @@
+# version.txt (for PyInstaller)
+# This will store the metadata information for the .exe
+
+CompanyName=My Company Ltd.
+FileDescription=My Custom App
+FileVersion=2.0.0.5
+InternalName=MyApp
+LegalCopyright=© 2025 My Company
+OriginalFilename=MyApp.exe
+ProductName=MyApp Software
+ProductVersion=2.0.0
