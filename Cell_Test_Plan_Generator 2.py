@@ -534,6 +534,8 @@ class CellTestPlanGenerator:
         l_step=[]
         # table1.append(['', 'Charge', 'I=Ipulse', 't>tpulse', 'Adjust the SOC to SoCRPT, Set'])
         # table1.append(['', 'Discharge', 'I=Ipulse', 't>tpulse', 'Adjust the SOC to SoCRPT, Set'])
+        # l_step.append([str("Discharge at 2 C until 2.4 V"),str(25)+'oC'])
+        pybamm.step.string("Rest for 60 minutes")
         for ii in table1:
             # print(ii,"------------------------------------------------->")
             st=convert_table_to_pybamm(ii)
@@ -557,6 +559,11 @@ class CellTestPlanGenerator:
         model = pybamm.lithium_ion.SPM({"thermal": "lumped"})
 
         param = pybamm.ParameterValues("Chen2020")
+        param.update({"Initial SEI thickness [m]": 0.2})
+        param.update({
+            "Initial concentration in negative electrode [mol.m-3]": 0.2 * param["Maximum concentration in negative electrode [mol.m-3]"],
+            "Initial concentration in positive electrode [mol.m-3]": 0.8 * param["Maximum concentration in positive electrode [mol.m-3]"],
+        })
 
         print("------------------------------------------------>>>>",self.cellcapacity)
 
@@ -567,7 +574,8 @@ class CellTestPlanGenerator:
             'Lower voltage cut-off [V]': 1.8,
             'Upper voltage cut-off [V]': 3.8,
         })
-
+        # initial_soc = 0.2
+        # y0 = pybamm.initial_conditions_from_soc(model, param, initial_soc)
         # param.process_model(model)
         # geometry = model.default_geometry
         # param.process_geometry(geometry)
@@ -590,14 +598,27 @@ class CellTestPlanGenerator:
         experiment1 = pybamm.Experiment([
             pybamm.step.string(i[0],temperature=i[1]) for i in l_step
             ])
-
+        import matplotlib.pyplot as plt
+        
         sim1 = pybamm.Simulation(model, parameter_values=param,experiment=experiment1,solver=solver)
         solution = sim1.solve([0,80000])
-        sim1.plot(["Terminal voltage [V]","Current [A]"])
+        sim1.plot(["Terminal voltage [V]","Current [A]","Ambient temperature [C]"])
+
+
+        plt.figure(figsize=(10, 8))
+        plt.plot(solution["Time [s]"].entries, solution["Terminal voltage [V]"].entries, label="Voltage")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Voltage (V)")
+        plt.title("Voltage vs Time")
+        plt.grid(True)
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
+
         # # solution = sim.solve([0, 3600])
         # plot = pybamm.QuickPlot(sim1, figsize=(14, 7))
         # plot.plot(0.5)
-        # import matplotlib.pyplot as plt
+        # 
         
         # # # Extract variables from solution
         # t = solution["Time [s]"].entries
