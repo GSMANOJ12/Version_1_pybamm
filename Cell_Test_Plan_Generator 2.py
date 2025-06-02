@@ -445,6 +445,7 @@ class CellTestPlanGenerator:
                   expr=pattern_time[0][1]
                   if var.lower()=="t":
                     rate+=" for"
+
                     v=func_to_val(expr)
                     rate+=f" {v} seconds"          
                 return rate,prev_temp
@@ -535,7 +536,8 @@ class CellTestPlanGenerator:
         # table1.append(['', 'Charge', 'I=Ipulse', 't>tpulse', 'Adjust the SOC to SoCRPT, Set'])
         # table1.append(['', 'Discharge', 'I=Ipulse', 't>tpulse', 'Adjust the SOC to SoCRPT, Set'])
         # l_step.append([str("Discharge at 2 C until 2.4 V"),str(25)+'oC'])
-        pybamm.step.string("Rest for 60 minutes")
+        import pybamm
+        # pybamm.step.string("Rest for 60 minutes")
         for ii in table1:
             # print(ii,"------------------------------------------------->")
             st=convert_table_to_pybamm(ii)
@@ -557,10 +559,15 @@ class CellTestPlanGenerator:
             #     print(ii,"............>>>>>>>>>>>>>>>>>>>")
 
         model = pybamm.lithium_ion.SPM({"thermal": "lumped"})
+        # l_step.insert(0, ["Rest for 30 seconds", "25oC"])
+        # l_step.insert(1, ["Charge at C/3 until 3.8 V", "25oC"])  # Add initial charging
 
         param = pybamm.ParameterValues("Chen2020")
         param.update({"Initial SEI thickness [m]": 0.2})
         param.update({
+            'Negative electrode thickness [m]': 85e-6,  # Adjust for large format
+            'Positive electrode thickness [m]': 75e-6,  # Adjust for large format
+            'Separator thickness [m]': 25e-6,
             "Initial concentration in negative electrode [mol.m-3]": 0.2 * param["Maximum concentration in negative electrode [mol.m-3]"],
             "Initial concentration in positive electrode [mol.m-3]": 0.8 * param["Maximum concentration in positive electrode [mol.m-3]"],
         })
@@ -574,20 +581,37 @@ class CellTestPlanGenerator:
             'Lower voltage cut-off [V]': 1.8,
             'Upper voltage cut-off [V]': 3.8,
         })
+
         # initial_soc = 0.2
-        # y0 = pybamm.initial_conditions_from_soc(model, param, initial_soc)
+        # # # y0 = pybamm.initial_conditions_from_soc(model, param, initial_soc)
         # param.process_model(model)
         # geometry = model.default_geometry
         # param.process_geometry(geometry)
-        # # #
+        # # # # #
         # mesh = pybamm.Mesh(geometry, model.default_submesh_types, model.default_var_pts,)
-
-        # # # # # Step 6: Apply spatial methods
-        # disc = pybamm.Discretisation(mesh, model.default_spatial_methods)
-        # disc.process_model(model,inplace=False)  # ✅ Now spatial variables arefv ready
+        # disc = pybamm.SpectralVolume()
+        # # # # # # Step 6: Apply spatial methods
+        # # disc = pybamm.Discretisation(mesh, model.default_spatial_methods)
+        # # disc.process_model(model,inplace=False)  # ✅ Now spatial variables arefv ready
         # model.check_well_determined(disc)
 
-        solver = pybamm.CasadiSolver(dt_max=10)  #return_solution_if_failed_early=True
+        solver = pybamm.CasadiSolver()
+                                        # # mode="safe",
+                                        # dt_max=30.0,    # Larger timestep
+                                        # atol=1e-6,      # More relaxed tolerance
+                                        # rtol=1e-6
+                                    # )/
+
+        # solver = pybamm.IDAKLUSolver( #mode="safe",  # More stable but slower
+        #                             #   dt_max=1.0,   # Limit maximum time step
+        #                               atol=1e-8,    # Absolute tolerance
+        #                               rtol=1e-8,     # Relative tolerance,
+        #                                 # max_nonlinear_iterations=100,  # Maximum nonlinear iterations
+        #                             #     max_time=100000,  # Maximum simulation time
+                                    #     # return_solution_if_failed_early=True,  # Return solution even if it fails early
+                                    #   return_solution_if_failed_early=True,  # Return solution even if it fails early   
+    
+                                    #  )  #return_solution_if_failed_early=True
 
         # pybamm.step.string("Rest for 5 seconds", temperature="25oC"),
         #     pybamm.step.string("Rest for 30 minutes"),
@@ -595,18 +619,22 @@ class CellTestPlanGenerator:
         #     pybamm.step.string("Discharge at 2.0 V until 1.2 A"),
         #     pybamm.step.string("Rest for 30 minutes"),
         #     pybamm.step.string("Charge at 1.0 A until 3.8 V")
+
+
         experiment1 = pybamm.Experiment([
             pybamm.step.string(i[0],temperature=i[1]) for i in l_step
             ])
-        import matplotlib.pyplot as plt
         
+        import matplotlib.pyplot as plt
+        # t_eval = np.linspace(0, 100000 , 1000)
+        # pybamm.Simulation.set_initial_soc(model,20)
         sim1 = pybamm.Simulation(model, parameter_values=param,experiment=experiment1,solver=solver)
         solution = sim1.solve([0,80000])
-        sim1.plot(["Terminal voltage [V]","Current [A]","Ambient temperature [C]"])
+        sim1.plot(["Terminal voltage [V]","Current [A]"])
 
 
         plt.figure(figsize=(10, 8))
-        plt.plot(solution["Time [s]"].entries, solution["Terminal voltage [V]"].entries, label="Voltage")
+        plt.plot(solution["Time [s]"].entries, solution["Battery voltage [V]"].entries, label="Voltage")
         plt.xlabel("Time (s)")
         plt.ylabel("Voltage (V)")
         plt.title("Voltage vs Time")
@@ -2195,7 +2223,7 @@ if __name__ == '__main__':
 # C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx
 # C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx
 # C:\Users\GSMANOJ\Downloads\new\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-1_Capacity_Energy_Efficiency_Crates_V1.0.docx
-a = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator 3\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx"
+a = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx"
 
 b = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx"
 
