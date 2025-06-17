@@ -1,0 +1,462 @@
+Main
+1
+Ah-Step
+9 51
+1 0 Level
+2 0 Label
+3 0 Command
+4 0 Parameter
+5 0 Termination
+6 0 Action
+7 0 Registration
+8 0 Comment
+0 1 1
+1 1
+2 1 
+3 1 Start
+4 1 
+5 1 U>3.9V&t>0.5sþýU<1.9V&t>0.5sþýI>420A&t>0.5sþýI<-420A&t>0.5sþýT1>65.0°C&t>0.5s
+6 1
+7 1 
+8 1 
+0 2 2
+1 2
+2 2 
+3 2 CalcOnce
+4 2 U_dyn_max_pos_T=3.8V
+5 2 
+6 2
+7 2 
+8 2 
+0 3 3
+1 3
+2 3 
+3 3 CalcOnce
+4 3 U_dyn_max_safety_pos_T=3.85V
+5 3 
+6 3
+7 3 
+8 3 
+0 4 4
+1 4
+2 4 
+3 4 CalcOnce
+4 4 U_dyn_min_pos_T=2V
+5 4 
+6 4
+7 4 
+8 4 
+0 5 5
+1 5
+2 5 
+3 5 CalcOnce
+4 5 U_dyn_min_safety_pos_T=1.95V
+5 5 
+6 5
+7 5 
+8 5 
+0 6 6
+1 6
+2 6 
+3 6 CalcOnce
+4 6 t_relax_electric=1800s
+5 6 
+6 6
+7 6 
+8 6 Electrical relaxation time
+0 7 7
+1 7
+2 7 
+3 7 CalcOnce
+4 7 t_relax_thermal=3600s
+5 7 
+6 7
+7 7 
+8 7 Thermal relaxation time
+0 8 8
+1 8
+2 8 
+3 8 CalcOnce
+4 8 I_C20_DCH=-CA/20
+5 8 
+6 8
+7 8 
+8 8 Discharge current with C/20
+0 9 9
+1 9
+2 9 
+3 9 CalcOnce
+4 9 I_C10_DCH=-CA/10
+5 9 
+6 9
+7 9 
+8 9 Discharge current with C/10
+0 10 10
+1 10
+2 10 
+3 10 CalcOnce
+4 10 I_C5_DCH=-CA/5
+5 10 
+6 10
+7 10 
+8 10 Discharge current with C/5
+0 11 11
+1 11
+2 11 
+3 11 CalcOnce
+4 11 I_C3_DCH=-CA/3
+5 11 
+6 11
+7 11 
+8 11 Discharge current with C/3
+0 12 12
+1 12
+2 12 
+3 12 CalcOnce
+4 12 I_C2_DCH=-CA/2
+5 12 
+6 12
+7 12 
+8 12 Discharge current with C/2
+0 13 13
+1 13
+2 13 
+3 13 CalcOnce
+4 13 I_1C_DCH=-CA
+5 13 
+6 13
+7 13 
+8 13 Discharge current with 1C
+0 14 14
+1 14
+2 14 
+3 14 CalcOnce
+4 14 I_2C_DCH=-2CA
+5 14 
+6 14
+7 14 
+8 14 Discharge current with 2C
+0 15 15
+1 15
+2 15 
+3 15 CalcOnce
+4 15 I_C20_CH=CA/20
+5 15 
+6 15
+7 15 
+8 15 Charge current with C/20
+0 16 16
+1 16
+2 16 
+3 16 CalcOnce
+4 16 I_C3_CH=CA/3
+5 16 
+6 16
+7 16 
+8 16 Charge current with C/3
+0 17 17
+1 17
+2 17 
+3 17 CalcOnce
+4 17 I_1C_CH=CA
+5 17 
+6 17
+7 17 
+8 17 Charge current with 1C
+0 18 18
+1 18
+2 18 
+3 18 CalcOnce
+4 18 I_derating=47.7A
+5 18 
+6 18
+7 18 
+8 18 De-rating current for CV charge
+0 19 19
+1 19
+2 19 
+3 19 Calculate
+4 19 SOC=(KAPA/C_RPT)*100
+5 19 
+6 19
+7 19 
+8 19 
+0 20 20
+1 20
+2 20 
+3 20 Calculate
+4 20 SOC_NOM=(int([CHARGENOM];I)/CN)*100
+5 20 
+6 20
+7 20 
+8 20 
+0 21 21
+1 21
+2 21 
+3 21 Calculate
+4 21 C_RPT=abs(As_D[RPT_KAPA])
+5 21 
+6 21
+7 21 
+8 21 
+0 22 22
+1 22
+2 22 
+3 22 Calculate
+4 22 KAPA_NOM=-abs(As_D[CHARGENOM])+abs(As_C[CHARGENOM])
+5 22 
+6 22
+7 22 
+8 22 
+0 23 23
+1 23
+2 23 
+3 23 Pause
+4 23 
+5 23 t>t_relax_electric
+6 23
+7 23 
+8 23 
+0 24 24
+1 24
+2 24 
+3 24 Define
+4 24 type=0þýURange=1
+5 24 
+6 24
+7 24 
+8 24 
+0 25 25
+1 25
+2 25 PRE_CONDITION_START
+3 25 Cycle-start
+4 25 
+5 25 
+6 25
+7 25 
+8 25 
+0 26 26
+1 26
+2 26 
+3 26 Set-Temp
+4 26 T=250°C
+5 26 
+6 26
+7 26 t=10sþýU=5mV
+8 26 
+0 27 27
+1 27
+2 27 
+3 27 Pause
+4 27 
+5 27 t>t_relax_thermal
+6 27
+7 27 t=10sþýU=5mV
+8 27 
+0 28 28
+1 28
+2 28 
+3 28 Discharge
+4 28 I=I_C3_DCHþýU=U_dyn_min_pos_T
+5 28 U<U_dyn_min_safety_pos_TþýI<I_C20_DCH&t>1s
+6 28
+7 28 t=3sþýU=5mV
+8 28 
+0 29 29
+1 29
+2 29 
+3 29 Pause
+4 29 
+5 29 t>1800s
+6 29
+7 29 t=10sþýU=5mV
+8 29 
+0 30 30
+1 30
+2 30 CHARGENOM
+3 30 Charge
+4 30 I=I_C3_CHþýU=U_dyn_max_pos_T
+5 30 U>U_dyn_max_pos_TþýNOM_SOC>95
+6 30
+7 30 t=3sþýU=5mV
+8 30 
+0 31 31
+1 31
+2 31 
+3 31 Charge
+4 31 I=I_deratingþýU=U_dyn_max_pos_T
+5 31 U>U_dyn_max_safety_pos_TþýI<I_C20_CH
+6 31
+7 31 t=3sþýU=5mV
+8 31 
+0 32 32
+1 32
+2 32 
+3 32 Set
+4 32 Ah-Set=0
+5 32 
+6 32
+7 32 
+8 32 
+0 33 33
+1 33
+2 33 
+3 33 Pause
+4 33 
+5 33 t>21600s
+6 33
+7 33 t=10sþýU=5mV
+8 33 
+0 34 34
+1 34
+2 34 PRE_CONDITION_END
+3 34 Cycle-end
+4 34 count=1
+5 34 
+6 34
+7 34 
+8 34 
+0 35 35
+1 35
+2 35 RPT_KAPA_START
+3 35 Cycle-start
+4 35 
+5 35 
+6 35
+7 35 
+8 35 
+0 36 36
+1 36
+2 36 RPT_KAPA
+3 36 Discharge
+4 36 I=I_C3_DCHþýU=U_dyn_min_pos_T
+5 36 U<U_dyn_min_safety_pos_TþýI<I_C20_DCH&t>1s
+6 36
+7 36 t=3sþýU=5mV
+8 36 
+0 37 37
+1 37
+2 37 
+3 37 Pause
+4 37 
+5 37 t>21600s
+6 37
+7 37 t=10sþýU=5mV
+8 37 
+0 38 38
+1 38
+2 38 
+3 38 Charge
+4 38 I=I_C3_CHþýU=U_dyn_max_pos_T
+5 38 SOC>50þýU>U_dyn_max_safety_pos_T&t>0.5sþýI<I_C20_CH
+6 38
+7 38 t=3sþýU=5mV
+8 38 
+0 39 39
+1 39
+2 39 
+3 39 Pause
+4 39 
+5 39 t>1800s
+6 39
+7 39 t=10sþýU=5mV
+8 39 
+0 40 40
+1 40
+2 40 
+3 40 Cycle-start
+4 40 
+5 40 
+6 40
+7 40 
+8 40 
+0 41 41
+1 41
+2 41 
+3 41 Set-Temp
+4 41 T=+25°C
+5 41 
+6 41
+7 41 t=10sþýU=5mV
+8 41 
+0 42 42
+1 42
+2 42 
+3 42 Pause
+4 42 
+5 42 t>t_relax_thermal
+6 42
+7 42 t=10sþýU=5mV
+8 42 
+0 43 43
+1 43
+2 43 
+3 43 Cycle-start
+4 43 
+5 43 
+6 43
+7 43 
+8 43 
+0 44 44
+1 44
+2 44 
+3 44 Discharge
+4 44 I=Ipulse
+5 44 t>tpulse
+6 44
+7 44 t=3sþýU=5mV
+8 44 
+0 45 45
+1 45
+2 45 
+3 45 Charge
+4 45 I=Ipulse
+5 45 t>tpulse
+6 45
+7 45 t=3sþýU=5mV
+8 45 
+0 46 46
+1 46
+2 46 
+3 46 Cycle-end
+4 46 count=+25
+5 46 t>4h,T>Tmax
+6 46
+7 46 
+8 46 
+0 47 47
+1 47
+2 47 
+3 47 Pause
+4 47 
+5 47 t>1800s
+6 47
+7 47 t=10sþýU=5mV
+8 47 
+0 48 48
+1 48
+2 48 
+3 48 Cycle-end
+4 48 count=+25
+5 48 
+6 48
+7 48 
+8 48 
+0 49 49
+1 49
+2 49 TERMINATION
+3 49 Discharge
+4 49 I=I_C3_DCHþýU=U_dyn_min_pos_T
+5 49 SOC<30þýI>I_C20_DCH
+6 49
+7 49 
+8 49 
+0 50 50
+1 50
+2 50 STOP
+3 50 Stop
+4 50 
+5 50 
+6 50
+7 50 
+8 50 

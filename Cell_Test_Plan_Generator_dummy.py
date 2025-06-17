@@ -4,10 +4,12 @@ Created on Thu Jun 20 09:26:22 2024
 
 @author: INIYANK
 """
-import Cell_Test_Plan_flowchart
+
 import pandas as pd
 import numpy as np
 import re
+import pybamm
+import numpy as np
 
 #import Cell_Test_Plan_Flowchart
 
@@ -213,17 +215,12 @@ class CellTestPlanGenerator:
                 self.set_calculation_parameters() 
         
                 self.process_main_table_expanded()
-
-                for ii in self.main_table_expanded: 
-                   print(ii)
         
                 self.set_end()
 
                 self.update_rows_and_columns()
 
                 self.save_output_file(temp_val_and_index[1])
-
-                Cell_Test_Plan_flowchart.flowchart_function(self.main_table,self.flowchart_output)
 
                 self.clear_all_stored_values()
         else:
@@ -235,9 +232,6 @@ class CellTestPlanGenerator:
         
             #Fill the unknown values
             self.populate_unkown_values(r'NA', r'NA')
-
-            for ii in self.main_table_expanded: 
-                   print(ii)
 
             #Integrating operating window
             if (self.integrate_operating_window_flag==1):
@@ -255,23 +249,10 @@ class CellTestPlanGenerator:
 
             self.save_output_file(r'NA')
 
-            # flowchart_name=self.output_folder
-            Cell_Test_Plan_flowchart.flowchart_function(self.main_table,self.flowchart_output,self.output_folder)
-
             self.clear_all_stored_values()
         
         #Marking the flag for completion of the test plan generation
         ProcessBlockForGUI.test_plan_status_flag = 1
-
-    def procees_inputs_for_pybamm(self,test_spec_input_from_gui,test_procedure_input_from_gui,operating_window_input_from_gui,initialization_parameters_file_input_from_gui,cell_type):
-        self.test_spec_file_path = str(test_spec_input_from_gui)
-        self.test_procedure_input = str(test_procedure_input_from_gui)
-        self.operating_window_file_path = str(operating_window_input_from_gui)    
-        self.initialization_parameters_file_path = str(initialization_parameters_file_input_from_gui)
-        self.cell_type_input = str(cell_type)
-        # self.termination_input = 1
-        # self.test_plan_config_input = 1
-        # self.registration_parameters_input = ["Aux1"]
 
     def process_inputs_from_gui(self, test_spec_input_from_gui, operating_window_input_from_gui, initialization_parameters_file_input_from_gui, test_procedure_input_from_gui, cell_type_input_from_gui, cycler_input_from_gui, termination_input_from_gui, test_plan_config_input_from_gui, registration_input_from_gui):
         self.test_spec_file_path = str(test_spec_input_from_gui)
@@ -407,13 +388,10 @@ class CellTestPlanGenerator:
         temperature_string = 'Temperature[°C]'.lower()    
         upper_voltage_string = 'Vdyn,max[V]'.lower()
         lower_voltage_string = 'Vdyn,min[V]'.lower()
-        capac="Cellcapacity[Ah]:".lower()
 
         all_temperature_values = []
         all_upper_voltage_limit_values = []
         all_lower_voltage_limit_values = []
-        capacity_value=0
-        flag_cap=0
 
         #Load the excel file
         sheet_data = pd.read_excel(self.operating_window_file_path, sheet_name=self.cell_type_input)
@@ -422,12 +400,6 @@ class CellTestPlanGenerator:
         for row_index, row in sheet_data.iterrows():
             for col_index, value in enumerate(row):
                 #Check for 'Temperature[°C]' string in the excel
-                if flag_cap==1 and str(value) != "nan":
-                    # print(value)
-                    if value:
-                        capacity_value=value
-                        flag_cap=0
-
                 if (pd.notna(value) and temperature_string in str(value).lower().replace(" ","")):
                     #Store all the numerical values from the particular row and removes NaN
                     all_temperature_values = [value for value in row if isinstance(value, (int, float)) and not math.isnan(value)]
@@ -443,12 +415,6 @@ class CellTestPlanGenerator:
                 elif (pd.notna(value) and lower_voltage_string in str(value).lower().replace(" ","")):
                     #Store all the numerical values from the particular row and removes NaN
                     all_lower_voltage_limit_values = [value for value in row if isinstance(value, (int, float)) and not math.isnan(value)]
-
-                elif (pd.notna(value) and capac in str(value).lower().replace(" ","")):
-                    #Store all the numerical values from the particular row and removes NaN
-                    flag_cap = 1
-                
-        self.cellcapacity=capacity_value
 
         for i in range(0, len(all_upper_voltage_limit_values)):
             #Appending the upper voltage limit with respective to the temperature
@@ -535,8 +501,8 @@ class CellTestPlanGenerator:
         
         #Fetch the parameters for the global safety limits
         #Upper and lower voltage limits (first value) - need to change for dynamic temperature ranges
-        self.upper_voltage_limit_value = self.all_upper_voltage_limit_values_with_temp[0][1]  #vmax
-        self.lower_voltage_limit_value = self.all_lower_voltage_limit_values_with_temp[0][1]  #vmin
+        self.upper_voltage_limit_value = self.all_upper_voltage_limit_values_with_temp[0][1]
+        self.lower_voltage_limit_value = self.all_lower_voltage_limit_values_with_temp[0][1]
 
         #Upper temperature limit
         self.upper_temperature_limit_value = self.all_temperature_values_with_col[-1][0]
@@ -624,11 +590,7 @@ class CellTestPlanGenerator:
                 loop_position_bit += 1
             
             #Configuring the keywords for searching in the loop
-            parameter_check_list_keywords = ["I=xx"] if self.test_plan_config_input == 1 else ["I=xx", "T=TSet", "T=xx"] 
-
-            #Iniyan
-
-
+            parameter_check_list_keywords = ["I=xx"] if self.test_plan_config_input == 1 else ["I=xx", "T=TSet", "T=xx"]             
 
             if (self.main_table[i][self.parameter_iterator] in parameter_check_list_keywords):
                 #Initializing the duplicate flag
@@ -1709,7 +1671,7 @@ class CellTestPlanGenerator:
         import os
         
         output_file_name = self.create_output_file_name(temperature_val)
-        self.flowchart_output=output_file_name
+
         #Creating output folder
         if not os.path.exists(self.output_folder): 
             os.makedirs(self.output_folder) 
@@ -1723,6 +1685,40 @@ class CellTestPlanGenerator:
         print('\nTest plan generated')
         
         print(f'\nCheck the file - {output_file_name} in {self.output_folder} folder')
+  
+    # def simulation_function(data):
+
+    #     model = pybamm.lithium_ion.DFN()
+    #     param = pybamm.ParameterValues("Chen2020")
+    #     experiment1 = pybamm.Experiment([
+    #         pybamm.step.string("Rest for 2 minutes", temperature="25oC"),
+    #         pybamm.step.string("Charge at 1C until 4.2V",temperature="298K"),
+    #         pybamm.step.string("Rest for 30 minutes", temperature= "25oC"),
+    #         pybamm.step.string("Charge at 2 C for 1 minutes", period="3 minutes",temperature= "25oC"),
+    #         pybamm.step.string("Discharge at 1C until 2.5V",temperature= "25oC"),
+    #         ]*5)
+    #     sim1 = pybamm.Simulation(model, parameter_values=param,experiment=experiment1)
+    #     solution1 = sim1.solve([0,650000])
+        
+    #     split_solutions = solution1.cycles
+    #     capacities=[]
+
+    #     def get_specific_capacity_positive(solution):
+    #     # This function calculates specific capacity during discharge
+    #         I = solution["Current [A]"].entries
+    #         t = solution["Time [s]"].entries
+    #         Q = abs((I * np.diff(t, prepend=0)).sum()) / 3600  # Convert As to Ah
+    #         return Q
+        
+    #     for i in range(0, len(split_solutions), 2):  # Only Discharge steps
+    #             discharge_solution = split_solutions[i]
+    #             capacity = get_specific_capacity_positive(discharge_solution)
+    #             capacities.append(capacity)
+
+    #     # time_values = solution1["Time [s]"].entries
+    #     # param.update({"time_val":capacities})
+    #     sim1.plot(["Terminal voltage [V]", "Current variable [A]"])
+    
 
 class ProcessBlockForGUI:
     test_plan_status_flag = 0 #Flag for tracking the test plan generation status
@@ -1775,51 +1771,50 @@ class ProcessBlockForGUI:
     
     def check_test_plan_status():
         return ProcessBlockForGUI.test_plan_status_flag
-        
-#Create an Global instance for accesing the functions and variables
-self = CellTestPlanGenerator()
-
-def main():
-    CellTestPlanGenerator()
-
-if __name__ == '__main__':
-    main()
+    
 
 
-# #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-10-1_Validation_tests_V1.1_changed.docx"
-# #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-1_Internal Resistance_V1.1_changed.docx"
-# #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-2_Internal Resistances BCC_V1.1_draft.docx"
-# a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx"
-# "C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator 3\Cell Test Plan Generator\Test Specifications\DTC-P-10-1_Validation_tests_V1.1_changed.docx"
-# C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx
-# C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx
-# C:\Users\GSMANOJ\Downloads\new\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-1_Capacity_Energy_Efficiency_Crates_V1.0.docx
-a = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-1_Capacity_Energy_Efficiency_Crates_V1.0.docx"
-b = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx"
+# def main():
+#     Simulation_cls()
 
-c = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Initialization_Parameters_Document.xlsx"
-
-#d = 'Table 3 : Test procedure for thermal relaxation'
-#d = 'Table 2: : Test procedure for determination of internal resistance'
-# d = 'Table 5: Test procedure for Full DoD continuous current experiment'
-# d = 'Table 9: Test procedure for Charge neutral pulse experiment'
-# d = 'Table 2: Test procedure for determination of CC/3,y, EC/3,y at different temperatures'
-# d="Table 7: Test procedure for Partial DoD continuous current experiment"
-# Test procedure for determination of capacity CRPT, CC/x,25°C, EC/x 25°C and ηC/x,25°C at different discharging C-rates.
-d="Table 2: Test procedure for determination of capacity CRPT, CC/x,25°C, EC/x 25°C and ηC/x,25°C at different discharging C-rates."
-
-e = 'Cell Alpha - Op-Window'
-# e = "Cell Bravo - Op-Window"
-
-f = 'BaSyTec'
-
-g = 0
-
-h = 0
-
-i = ['Ah-Set', 'Ah-Charge', 'Ah-Discharge']
+# if __name__ == '__main__':
+#     main()
 
 
-# CellTestPlanGenerator.execute_main_generate_function(a, b, c, d, e, f, g, h, i)
+# # #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-10-1_Validation_tests_V1.1_changed.docx"
+# # #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-1_Internal Resistance_V1.1_changed.docx"
+# # #a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-6-2_Internal Resistances BCC_V1.1_draft.docx"
+# # a = r"C:\Users\INIYANK\OneDrive - Daimler Truck\Windows 10 - Backup\Folder@Work\Work - Folders\BMS Projects\Cell Specifications\Python Code\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx"
+# # "C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator 3\Cell Test Plan Generator\Test Specifications\DTC-P-10-1_Validation_tests_V1.1_changed.docx"
+# # C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx
+# # C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-2_Capacity_Energy_Efficiency_Temp_V1.0.docx
+# # C:\Users\GSMANOJ\Downloads\new\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-1_Capacity_Energy_Efficiency_Crates_V1.0.docx
+# a = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Test Specifications\DTC-P-2-1_Capacity_Energy_Efficiency_Crates_V1.0.docx"
+# b = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Operating Window_HDMD_CATL_B-sample_v2.8.xlsx"
 
-# CellTestPlanGenerator.simulation_function(a,d,"pybamm",b,c,e)
+# c = r"C:\Users\GSMANOJ\Downloads\Cell Test Plan Generator_Copy\Cell Test Plan Generator\Supporting Documents\Initialization_Parameters_Document.xlsx"
+
+# #d = 'Table 3 : Test procedure for thermal relaxation'
+# #d = 'Table 2: : Test procedure for determination of internal resistance'
+# # d = 'Table 5: Test procedure for Full DoD continuous current experiment'
+# # d = 'Table 9: Test procedure for Charge neutral pulse experiment'
+# # d = 'Table 2: Test procedure for determination of CC/3,y, EC/3,y at different temperatures'
+# # d="Table 7: Test procedure for Partial DoD continuous current experiment"
+# # Test procedure for determination of capacity CRPT, CC/x,25°C, EC/x 25°C and ηC/x,25°C at different discharging C-rates.
+# d="Table 2: Test procedure for determination of capacity CRPT, CC/x,25°C, EC/x 25°C and ηC/x,25°C at different discharging C-rates."
+
+# e = 'Cell Alpha - Op-Window'
+# # e = "Cell Bravo - Op-Window"
+
+# f = 'BaSyTec'
+
+# g = 0
+
+# h = 0
+
+# i = ['Ah-Set', 'Ah-Charge', 'Ah-Discharge']
+
+
+# # CellTestPlanGenerator.execute_main_generate_function(a, b, c, d, e, f, g, h, i)
+
+CellTestPlanGenerator.simulation_function(a,d,"pybamm",b,c,e)

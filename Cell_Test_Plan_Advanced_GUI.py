@@ -14,6 +14,7 @@ from PIL import Image
 
 from Cell_Test_Plan_Generator import CellTestPlanGenerator
 from Cell_Test_Plan_Generator import ProcessBlockForGUI
+from Cell_Test_Plan_Simulation import *    
 
 class CellTestPlanGeneratorGUI(object):
     def __init__(self, root):
@@ -188,7 +189,7 @@ class CellTestPlanGeneratorGUI(object):
             {"content": self.select_simulation_tab},
             {"content": self.select_cell_cycler_tab},
             {"content": self.select_registration_tab},
-        ]
+        ] 
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         CTk.set_appearance_mode(new_appearance_mode)
@@ -216,22 +217,38 @@ class CellTestPlanGeneratorGUI(object):
         # Clear current content
         for widget in self.content_frame.winfo_children():
             widget.destroy()
-        print(self.conf_type)
+        print(self.conf_type,self.select_simulation_tab)
+        
         if self.conf_type.lower()=="simulation":
                self.tabs=self.tabs_all[:3]
         else:
                self.tabs=self.tabs_all[:2]+self.tabs_all[3:]
+
         # Load the content for the specified tab
         tab_data = self.tabs[index]
         tab_data["content"]()
-
+        self.prev_tab=tab_data["content"]
+        
         # Update button states
         self.back_button.configure(state="normal" if index > 0 else "disabled")
         self.next_button.configure(
             state="normal" if index < len(self.tabs) - 1 else "disabled")
 
-    def select_input_fie_tab(self):
+    def background_func(self):
+        if(self.conf_type.lower()=="simulation"):
+            self.background_label = CTk.CTkLabel(self.content_frame, text="SIM",
+                                    font=("Segoe UI", 18,"bold"),
+                                    text_color="#87CEEB")  # light blue "#87CEEB" #ADD8E6
+            self.background_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+        else:
+            self.background_label = CTk.CTkLabel(self.content_frame, text="test\nplan",
+                                    font=("Segoe UI", 18,"bold"),
+                                    text_color="#ADD8E6")  # light blue "#87CEEB" #ADD8E6
+            self.background_label.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
 
+
+    def select_input_fie_tab(self):
+        self.background_func()
         self.input_tab_main_label = CTk.CTkLabel(
             self.content_frame, text="Select the Input Files", font=("Segoe UI,", 16, "bold"))
         self.input_tab_main_label.grid(padx=(80, 0), pady=(20, 0))
@@ -285,6 +302,7 @@ class CellTestPlanGeneratorGUI(object):
         self.check_display_generate()
 
     def select_procedure_table_tab(self):
+        self.background_func()
         self.selection_tab_test_procedure_label = CTk.CTkLabel(
             self.content_frame, text="Select the Test Procedure", font=("Segoe UI,", 16, "bold"))
         self.selection_tab_test_procedure_label.grid(padx=(80, 0), pady=(20, 0))
@@ -329,6 +347,7 @@ class CellTestPlanGeneratorGUI(object):
         self.check_display_generate()
 
     def select_cell_cycler_tab(self):
+        self.background_func()
         self.cell_cycler_tab_cycler_label = CTk.CTkLabel(
             self.content_frame, text="Select the Cycler Input", font=("Segoe UI,", 16, "bold"))
         self.cell_cycler_tab_cycler_label.grid(padx=(90, 0), pady=(20, 0))
@@ -383,6 +402,7 @@ class CellTestPlanGeneratorGUI(object):
         self.check_display_generate()
 
     def select_registration_tab(self):
+        self.background_func()
         self.registration_parameters_list = CellTestPlanGenerator.get_registration_parameters(
             self.initialization_parameters_file_input)
 
@@ -439,6 +459,7 @@ class CellTestPlanGeneratorGUI(object):
 
     # def display_simulation(self):
     #     if(self.simulation_check.get()==1):
+            self.background_func()
             self.simulation_label = CTk.CTkLabel(self.content_frame, text="Select the Simulation Type", font=("Segoe UI,", 16, "bold"))
             self.simulation_label.grid(row=1, column=2, padx=(50, 0), pady=(20, 0))
 
@@ -475,12 +496,28 @@ class CellTestPlanGeneratorGUI(object):
         self.simulation_textbox.insert("0.0", self.sim_type)
     
     def config_func(self):
+        if(self.prev_conf_type!=self.conf_type):
+            self.background_label.destroy()
+            self.background_func()
         if (self.conf_type.lower()=="simulation"):
-            print("okokokokok")
-            
+            # print(self.prev_tab==self.select_cell_cycler_tab,"\n",self.tabs_all[self.current_tab]["content"],"\n",self.select_cell_cycler_tab,self.prev_conf_type,self.conf_type)
+            if (self.prev_tab==self.select_cell_cycler_tab or self.prev_tab==self.select_registration_tab):
+                  self.load_tab(0)
+                  self.current_tab=0
+        if (self.conf_type.lower()=="test plan"):
+            # print(self.tabs_all[self.current_tab]["content"],self.select_simulation_tab,self.prev_conf_type)
+            if self.tabs_all[self.current_tab]["content"]==self.select_simulation_tab and self.prev_conf_type.lower()=="simulation":
+                # if self.conf_type=="test plan":
+                  self.load_tab(0)
+                  self.current_tab=0
+
     def simulation_func(self):
         if (self.sim_type.lower()=="pybamm"):
-           CellTestPlanGenerator.simulation_function("data")
+           Simulation_cls.simulation_function(self.test_spec_file_input, self.operating_window_file_input, self.initialization_parameters_file_input,
+                                                             self.test_procedure_input,self.cell_type_input)
+        #    self.test_spec_file_input, self.operating_window_file_input, self.initialization_parameters_file_input,
+        #                                                      self.test_procedure_input, self.cell_type_input, self.cell_cycler_input, self.termination_input, self.multiple_test_plan_input, self.registration_parameters_input)
+        
         
 
     def process_browse_files(self):
@@ -622,9 +659,10 @@ class CellTestPlanGeneratorGUI(object):
             print(f'\nMultiple test plan not selected')
     
     def select_config(self,conf_type):
-            self.conf_type=conf_type
+            self.prev_conf_type=self.conf_type
             self.configuration_textbox.delete("0.0", "end")
-            self.configuration_textbox.insert("0.0", self.conf_type)       
+            self.configuration_textbox.insert("0.0", conf_type)  
+            self.conf_type=conf_type     
 
     def simulation_info_popup(self):
         # Display a popup message when the info button is clicked

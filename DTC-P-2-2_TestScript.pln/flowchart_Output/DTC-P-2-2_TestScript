@@ -1,0 +1,517 @@
+digraph {
+	rankdir=LR
+	rank=same
+	splines=ortho
+	nodesep=0.4
+	ranksep=1.0
+	concentrate=false
+	{
+		rank=same
+		N1 [label="	CYCLE-START-1		
+" shape=ellipse]
+		N2 [label="	SetTemperature		
+T=25°C" shape=box]
+		N3 [label="	Rest		
+" shape=box]
+		N4 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N5 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N6 [label="	Rest		
+" shape=box]
+		N7 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 0 = COUNT 0 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N2 [label="	SetTemperature		
+T=25°C" shape=box]
+		N3 [label="	Rest		
+" shape=box]
+		N4 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N5 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N6 [label="	Rest		
+" shape=box]
+		N7 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 1 = COUNT 1 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N3 [label="	Rest		
+" shape=box]
+		N4 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N5 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N6 [label="	Rest		
+" shape=box]
+		N7 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 2 = COUNT 2 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N4 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N5 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N6 [label="	Rest		
+" shape=box]
+		N7 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 3 = COUNT 3 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N5 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N6 [label="	Rest		
+" shape=box]
+		N7 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 4 = COUNT 4 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N6 [label="	Rest		
+" shape=box]
+		N7 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 5 = COUNT 5 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N7 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 6 = COUNT 6 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N8 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 7 = COUNT 7 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N9 [label="	Set		
+Ah-Set=0" shape=box]
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 8 = COUNT 8 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N10 [label="	Rest		
+" shape=box]
+		N11 [label="	COUNT 9 = COUNT 9 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N11 [label="	COUNT 10 = COUNT 10 +1		
+CYCLE-END-1	" shape=ellipse]
+	}
+	{
+		rank=same
+		N12 [label="	CYCLE-START-2		
+" shape=ellipse]
+		N13 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N14 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N15 [label="	Rest		
+" shape=box]
+		N16 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N17 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N18 [label="	Set		
+Ah-Set=0" shape=box]
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 11 = COUNT 11 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N13 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N14 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N15 [label="	Rest		
+" shape=box]
+		N16 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N17 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N18 [label="	Set		
+Ah-Set=0" shape=box]
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 12 = COUNT 12 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N14 [label="	Discharge		
+V=Vdyn,min" shape=diamond]
+		N15 [label="	Rest		
+" shape=box]
+		N16 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N17 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N18 [label="	Set		
+Ah-Set=0" shape=box]
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 13 = COUNT 13 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N15 [label="	Rest		
+" shape=box]
+		N16 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N17 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N18 [label="	Set		
+Ah-Set=0" shape=box]
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 14 = COUNT 14 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N16 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N17 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N18 [label="	Set		
+Ah-Set=0" shape=box]
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 15 = COUNT 15 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N17 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N18 [label="	Set		
+Ah-Set=0" shape=box]
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 16 = COUNT 16 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N18 [label="	Set		
+Ah-Set=0" shape=box]
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 17 = COUNT 17 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N19 [label="	Rest		
+" shape=box]
+		N20 [label="	COUNT 18 = COUNT 18 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N20 [label="	COUNT 19 = COUNT 19 +1		
+CYCLE-END-2	" shape=ellipse]
+	}
+	{
+		rank=same
+		N21 [label="	CYCLE-START-3		
+" shape=ellipse]
+		N22 [label="	SetTemperature		
+T=TSet" shape=box]
+		N23 [label="	Rest		
+" shape=box]
+		N24 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N25 [label="	Rest		
+" shape=box]
+		N26 [label="	SetTemperature		
+T=25°C" shape=box]
+		N27 [label="	Rest		
+" shape=box]
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 20 = COUNT 20 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N22 [label="	SetTemperature		
+T=TSet" shape=box]
+		N23 [label="	Rest		
+" shape=box]
+		N24 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N25 [label="	Rest		
+" shape=box]
+		N26 [label="	SetTemperature		
+T=25°C" shape=box]
+		N27 [label="	Rest		
+" shape=box]
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 21 = COUNT 21 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N23 [label="	Rest		
+" shape=box]
+		N24 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N25 [label="	Rest		
+" shape=box]
+		N26 [label="	SetTemperature		
+T=25°C" shape=box]
+		N27 [label="	Rest		
+" shape=box]
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 22 = COUNT 22 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N24 [label="	Discharge		
+I=INOM/3" shape=diamond]
+		N25 [label="	Rest		
+" shape=box]
+		N26 [label="	SetTemperature		
+T=25°C" shape=box]
+		N27 [label="	Rest		
+" shape=box]
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 23 = COUNT 23 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N25 [label="	Rest		
+" shape=box]
+		N26 [label="	SetTemperature		
+T=25°C" shape=box]
+		N27 [label="	Rest		
+" shape=box]
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 24 = COUNT 24 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N26 [label="	SetTemperature		
+T=25°C" shape=box]
+		N27 [label="	Rest		
+" shape=box]
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 25 = COUNT 25 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N27 [label="	Rest		
+" shape=box]
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 26 = COUNT 26 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N28 [label="	Charge		
+I=IRPT/3" shape=diamond]
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 27 = COUNT 27 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N29 [label="	Charge		
+V=Vdyn,max" shape=diamond]
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 28 = COUNT 28 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N30 [label="	Rest		
+" shape=box]
+		N31 [label="	COUNT 29 = COUNT 29 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N31 [label="	COUNT 30 = COUNT 30 +1		
+CYCLE-END-3	" shape=ellipse]
+	}
+	{
+		rank=same
+		N32 [label="	Discharge		
+I=INOM/3		
+SOC=30%" shape=box]
+	}
+	N1 -> N2 [minlen=3.5]
+	N2 -> N3 [minlen=3.5]
+	N3 -> N4 [minlen=3.5 taillabel=" t>30min*	"]
+	N4 -> N5 [minlen=3.5 taillabel=" V<Vdyn,min	"]
+	N4 -> N4 [headlabel="	 V > Vdyn,min
+		" headport=e minlen=3.5 tailport=w]
+	N5 -> N6 [minlen=3.5 taillabel=" I<0.05.INOM	"]
+	N5 -> N5 [headlabel="	 I > 0.05.INOM
+		" headport=e minlen=3.5 tailport=w]
+	N6 -> N7 [minlen=3.5 taillabel=" t>30min	"]
+	N7 -> N8 [minlen=3.5 taillabel=" V>Vdyn,max	"]
+	N7 -> N7 [headlabel="	 V < Vdyn,max
+		" headport=e minlen=3.5 tailport=w]
+	N8 -> N9 [minlen=3.5 taillabel=" I<0.05.IRPT	"]
+	N8 -> N8 [headlabel="	 I > 0.05.IRPT
+		" headport=e minlen=3.5 tailport=w]
+	N9 -> N10 [minlen=3.5]
+	N10 -> N11 [minlen=3.5 taillabel=" t>30min	"]
+	N11 -> N12 [minlen=3.5 taillabel=" COUNT 0 == 1	"]
+	N11 -> N1 [constraint=false headlabel=" COUNT 0 < 1" labelangle=30 labeldistance=5.0]
+	N12 -> N13 [minlen=3.5]
+	N13 -> N14 [minlen=3.5 taillabel=" V<Vdyn,min	"]
+	N13 -> N13 [headlabel="	 V > Vdyn,min
+		" headport=e minlen=3.5 tailport=w]
+	N14 -> N15 [minlen=3.5 taillabel=" I<0.05.INOM	"]
+	N14 -> N14 [headlabel="	 I > 0.05.INOM
+		" headport=e minlen=3.5 tailport=w]
+	N15 -> N16 [minlen=3.5 taillabel=" t>30min	"]
+	N16 -> N17 [minlen=3.5 taillabel=" V>Vdyn,max	"]
+	N16 -> N16 [headlabel="	 V < Vdyn,max
+		" headport=e minlen=3.5 tailport=w]
+	N17 -> N18 [minlen=3.5 taillabel=" I<0.05.IRPT	"]
+	N17 -> N17 [headlabel="	 I > 0.05.IRPT
+		" headport=e minlen=3.5 tailport=w]
+	N18 -> N19 [minlen=3.5]
+	N19 -> N20 [minlen=3.5 taillabel=" t>30min	"]
+	N20 -> N21 [minlen=3.5 taillabel=" COUNT 1 == 1	"]
+	N20 -> N12 [constraint=false headlabel=" COUNT 1 < 1" labelangle=30 labeldistance=5.0]
+	N21 -> N22 [minlen=3.5]
+	N22 -> N23 [minlen=3.5]
+	N23 -> N24 [minlen=3.5 taillabel=" t>30min*	"]
+	N24 -> N25 [minlen=3.5 taillabel=" V<Vdyn,min	"]
+	N24 -> N24 [headlabel="	 V > Vdyn,min
+		" headport=e minlen=3.5 tailport=w]
+	N25 -> N26 [minlen=3.5 taillabel=" t>30min	"]
+	N26 -> N27 [minlen=3.5]
+	N27 -> N28 [minlen=3.5 taillabel=" t>30min*	"]
+	N28 -> N29 [minlen=3.5 taillabel=" V>Vdyn,max	"]
+	N28 -> N28 [headlabel="	 V < Vdyn,max
+		" headport=e minlen=3.5 tailport=w]
+	N29 -> N30 [minlen=3.5 taillabel=" I<0.05.IRPT	"]
+	N29 -> N29 [headlabel="	 I > 0.05.IRPT
+		" headport=e minlen=3.5 tailport=w]
+	N30 -> N31 [minlen=3.5 taillabel=" t>30min	"]
+	N31 -> N32 [minlen=3.5 taillabel=" COUNT 2 == xx	"]
+	N31 -> N21 [constraint=false headlabel=" COUNT 2 < xx" labelangle=30 labeldistance=5.0]
+}
